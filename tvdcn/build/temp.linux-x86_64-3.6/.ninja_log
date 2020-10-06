@@ -1,0 +1,8 @@
+# ninja log v5
+0	9217	1595602682358603924	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/cpu/DeformConv1d_cpu.o	efd04b77df7d5888
+1	9712	1595602682850611162	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/cpu/DeformConv2d_cpu.o	16fb3a42d82d83a3
+1	10330	1595602683470620270	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/cpu/DeformConv3d_cpu.o	96413996b6e5ad97
+1	13106	1595602686250660961	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/cuda/DeformConv1d_cuda.o	892a2b4f3b5ac69e
+1	13191	1595602686334662185	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/cuda/DeformConv2d_cuda.o	b15037d3b9907803
+1	13432	1595602686574665686	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/cuda/DeformConv3d_cuda.o	416ffb9ab6e29426
+0	16187	1595602689326705696	/home/hai/Desktop/KWS/attention/tvdcn/build/temp.linux-x86_64-3.6/home/hai/Desktop/KWS/attention/tvdcn/csrc/vision.o	58cfd183c32324d4

@@ -1,0 +1,5 @@
+# ninja log v5
+34	1914	6222475243714298	C:/Users/PC/Desktop/code/python/tvdcn/build/temp.win-amd64-3.7/Release/Users/PC/Desktop/code/python/tvdcn/csrc/cpu/DeformConv3d_cpu.obj	15f6fa026434a29e
+32	1946	6222475243724271	C:/Users/PC/Desktop/code/python/tvdcn/build/temp.win-amd64-3.7/Release/Users/PC/Desktop/code/python/tvdcn/csrc/cpu/DeformConv1d_cpu.obj	868855a30ce82212
+33	1975	6222475243724271	C:/Users/PC/Desktop/code/python/tvdcn/build/temp.win-amd64-3.7/Release/Users/PC/Desktop/code/python/tvdcn/csrc/cpu/DeformConv2d_cpu.obj	33fe630a316569c1
+1	5756	6222475282132040	C:/Users/PC/Desktop/code/python/tvdcn/build/temp.win-amd64-3.7/Release/Users/PC/Desktop/code/python/tvdcn/csrc/vision.obj	d64d0a35b6c5d520
