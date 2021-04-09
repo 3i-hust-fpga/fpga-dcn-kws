@@ -2,22 +2,6 @@
 
 #define BUFFER_SIZE (CONV_IN_SIZE_1 * (CONV_KERNEL_SIZE_0 -1) + CONV_KERNEL_SIZE_1)
 
-// void cache_input(
-//     hls::stream<DTYPE> &in,
-//     DTYPE cache[CONV_IN_SIZE_0][CONV_IN_SIZE_1],
-//     hls::stream<DTYPE> &out) {
-
-//     DTYPE placeholder;
-
-//     for (int i = 0; i < CONV_IN_SIZE_0; i++) {
-//         for (int j = 0; j < CONV_IN_SIZE_1; j++) {
-//             in >> placeholder;
-//             cache[i][j] = placeholder;
-//             out << placeholder;
-//         }
-//     }
-// }
-
 void conv_offset( 
     hls::stream<DTYPE> &in, 
     DTYPE w_offset[CONV_OFFSET_FILTERS][CONV_KERNEL_SIZE_0][CONV_KERNEL_SIZE_1], 

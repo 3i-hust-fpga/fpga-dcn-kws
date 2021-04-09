@@ -16,7 +16,7 @@ struct axis_data {
 };
 
 
-#define CONV_IN_SIZE_0      100
+#define CONV_IN_SIZE_0      200
 #define CONV_IN_SIZE_1      40
 #define CONV_KERNEL_SIZE_0  3
 #define CONV_KERNEL_SIZE_1  3

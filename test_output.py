@@ -2,19 +2,15 @@ import torch
 
 import numpy as np
 
-sim_str = open('project_2/solution3/csim/build/out_sim.txt').read()
-print(sim_str)
-exit()
+sim_str = open('C:/Users/PC/AppData/Roaming/Xilinx/Vivado/test/solution1/csim/build/out_sim.txt').read()
+# print(sim_str)
 hw_str = ''
 
 for line in open('out_hw.txt').read().strip().split('\n'):
     line = line.strip()
     parts = line.split(' ')
     if parts[0].isnumeric():
-        # print(line)
         hw_str += line + '\n'
-# exit()
-print(hw_str)
 # exit()
 print(len(sim_str), len(hw_str))
 line = 0

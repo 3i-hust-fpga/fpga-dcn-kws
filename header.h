@@ -105,6 +105,11 @@ void linear_3(
 
 void hls_model_wrapper(hls::stream<axis_data> &in, hls::stream<axis_data> &out);
 
+void model_test(
+    DTYPE in1[CONV_IN_SIZE_0 * CONV_IN_SIZE_1], 
+    DTYPE in2[CONV_IN_SIZE_0 * CONV_IN_SIZE_1], 
+    hls::stream<axis_data> &out);
+
 
 #endif
 

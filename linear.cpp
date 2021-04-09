@@ -7,9 +7,11 @@ void linear_1(
     hls::stream<DTYPE> &out,
     hls::stream<DTYPE> &cache) {
 
-#pragma HLS ARRAY_PARTITION variable=w cyclic factor=8 dim=0
+#pragma HLS ARRAY_PARTITION variable=w complete
+#pragma HLS ARRAY_PARTITION variable=b complete
 
     DTYPE a_row[L1_COLS];
+#pragma HLS ARRAY_PARTITION variable=a_row complete
     DTYPE placeholder;
     DTYPE tmp;
 
@@ -40,10 +42,11 @@ void linear_2(
     DTYPE b [L2_ROWS],
     hls::stream<DTYPE> &out) {
 
-#pragma HLS ARRAY_PARTITION variable=w cyclic factor=8 dim=0
-    
+#pragma HLS ARRAY_PARTITION variable=w complete
+#pragma HLS ARRAY_PARTITION variable=b complete
+
     DTYPE a_row[L2_COLS];
-#pragma HLS ARRAY_PARTITION variable=a_row complete dim=0
+#pragma HLS ARRAY_PARTITION variable=a_row complete
     DTYPE tmp;
 
     loop_seq_len: for (int i = 0; i < CONV_OUT_SIZE_0; i++) {
@@ -70,9 +73,12 @@ void linear_3(
     DTYPE w [L3_ROWS][L3_COLS],
     DTYPE b [L3_ROWS],
     hls::stream<DTYPE> &out) {
+    
+#pragma HLS ARRAY_PARTITION variable=w complete
+#pragma HLS ARRAY_PARTITION variable=b complete
 
     DTYPE a_row[L3_COLS];
-#pragma HLS ARRAY_PARTITION variable=a_row complete dim=1
+#pragma HLS ARRAY_PARTITION variable=a_row complete
     DTYPE tmp;
 
     loop_rows: for (int j = 0; j < L3_ROWS; j++) {
