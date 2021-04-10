@@ -94,8 +94,8 @@ void gru (
     DTYPE placeholder7;
 
     DTYPE mul1[GRU_G_SIZE], mul2[GRU_G_SIZE];
-#pragma HLS ARRAY_PARTITION variable=mul1 complete
-#pragma HLS ARRAY_PARTITION variable=mul2 complete
+#pragma HLS ARRAY_PARTITION variable=mul1 cyclic factor=16 dim=0
+#pragma HLS ARRAY_PARTITION variable=mul2 cyclic factor=16 dim=0
 
     DTYPE hidden[GRU_HIDDEN_SIZE]={0};
 #pragma HLS ARRAY_PARTITION variable=hidden complete
@@ -114,79 +114,72 @@ void gru (
 #pragma HLS ARRAY_PARTITION variable=inputgate complete
 #pragma HLS ARRAY_PARTITION variable=newgate   complete
 
+
+        DTYPE tmp_r[GRU_HIDDEN_SIZE];
+        DTYPE tmp_i[GRU_HIDDEN_SIZE];
+        DTYPE tmp_n[GRU_HIDDEN_SIZE];
+#pragma HLS ARRAY_PARTITION variable=tmp_r complete
+#pragma HLS ARRAY_PARTITION variable=tmp_i complete
+#pragma HLS ARRAY_PARTITION variable=tmp_n complete 
+
+        DTYPE tmp_mul1[GRU_G_SIZE][GRU_IN_SIZE];
+        DTYPE tmp_mul2[GRU_G_SIZE][GRU_HIDDEN_SIZE];
+#pragma HLS ARRAY_PARTITION variable=tmp_mul1 cyclic factor=16 dim=0
+#pragma HLS ARRAY_PARTITION variable=tmp_mul2 cyclic factor=16 dim=0
+
+
     loop_seq_len: for (int t = 0; t < CONV_OUT_SIZE_0; t++){
 
-        loop_g_in: for (int j = 0; j < GRU_IN_SIZE; j+=4) {
-#pragma HLS PIPELINE II=16
-            
+// ######################################################################
+        for (int j = 0; j < GRU_IN_SIZE; j+=1) {
+#pragma HLS PIPELINE
             // read input
             in >> placeholder0;
-            in >> placeholder1;
-            in >> placeholder2;
-            in >> placeholder3;
-            // in >> placeholder4;
-            // in >> placeholder5;
-            // in >> placeholder6;
-            // in >> placeholder7;
 
-            loop_compute_g1: for (int i = 0; i < GRU_G_SIZE; i+=1) {
-                if (j == 0) {
-                    mul1[i+0] = 0;
-                    // mul1[i+1] = 0;
-                }
-                // mul1[i+0] += w_ih[(j+0)*GRU_G_SIZE+i] * placeholder0;
+            for (int i = 0; i < GRU_G_SIZE; i+=1) {
+                tmp_mul1[i][j] = w_ih[j*GRU_G_SIZE+i] * placeholder0;
 
-                mul1[i+0] += gru_4_cores(w_ih[(j+0)*GRU_G_SIZE+i+0], placeholder0,
-                                         w_ih[(j+1)*GRU_G_SIZE+i+0], placeholder1,
-                                         w_ih[(j+2)*GRU_G_SIZE+i+0], placeholder2,
-                                         w_ih[(j+3)*GRU_G_SIZE+i+0], placeholder3);
+                // tmp_mul1[i+0] = gru_4_cores(w_ih[(j+0)*GRU_G_SIZE+i+0], placeholder0,
+                //                             w_ih[(j+1)*GRU_G_SIZE+i+0], placeholder1,
+                //                             w_ih[(j+2)*GRU_G_SIZE+i+0], placeholder2,
+                //                             w_ih[(j+3)*GRU_G_SIZE+i+0], placeholder3);
 
-                // mul1[i+1] += gru_4_cores(w_ih[(j+0)*GRU_G_SIZE+i+1], placeholder0,
-                //                          w_ih[(j+1)*GRU_G_SIZE+i+1], placeholder1,
-                //                          w_ih[(j+2)*GRU_G_SIZE+i+1], placeholder2,
-                //                          w_ih[(j+3)*GRU_G_SIZE+i+1], placeholder3);
-
-                // mul1[i+0] += gru_8_cores(w_ih[(j+0)*GRU_G_SIZE+i], placeholder0,
-                //                          w_ih[(j+1)*GRU_G_SIZE+i], placeholder1,
-                //                          w_ih[(j+2)*GRU_G_SIZE+i], placeholder2,
-                //                          w_ih[(j+3)*GRU_G_SIZE+i], placeholder3,
-                //                          w_ih[(j+4)*GRU_G_SIZE+i], placeholder4,
-                //                          w_ih[(j+5)*GRU_G_SIZE+i], placeholder5,
-                //                          w_ih[(j+6)*GRU_G_SIZE+i], placeholder6,
-                //                          w_ih[(j+7)*GRU_G_SIZE+i], placeholder7);
-                
             }
         }
 
-        loop_g_hidden: for (int j = 0; j < GRU_HIDDEN_SIZE; j+=4) {
-#pragma HLS PIPELINE II=16
-            loop_compute_g2: for (int i = 0; i < GRU_G_SIZE; i+=1) {
+        for (int j = 0; j < GRU_IN_SIZE; j+=1) {
+#pragma HLS UNROLL
+            for (int i = 0; i < GRU_G_SIZE; i+=1) {
                 if (j == 0) {
-                    mul2[i+0] = 0;
-                    // mul2[i+1] = 0;
+                    mul1[i] = 0;
                 }
-                // mul2[i+0] += w_hh[(j+0)*GRU_G_SIZE+i] * hidden[j];
-
-                mul2[i+0] += gru_4_cores(w_hh[(j+0)*GRU_G_SIZE+i+0], hidden[j+0],
-                                         w_hh[(j+1)*GRU_G_SIZE+i+0], hidden[j+1],
-                                         w_hh[(j+2)*GRU_G_SIZE+i+0], hidden[j+2],
-                                         w_hh[(j+3)*GRU_G_SIZE+i+0], hidden[j+3]);
-
-                // mul2[i+1] += gru_4_cores(w_hh[(j+0)*GRU_G_SIZE+i+1], hidden[j+0],
-                //                          w_hh[(j+1)*GRU_G_SIZE+i+1], hidden[j+1],
-                //                          w_hh[(j+2)*GRU_G_SIZE+i+1], hidden[j+2],
-                //                          w_hh[(j+3)*GRU_G_SIZE+i+1], hidden[j+3]);
-
-                // mul2[i+0] += gru_8_cores(w_hh[(j+0)*GRU_G_SIZE+i], hidden[j+0],
-                //                          w_hh[(j+1)*GRU_G_SIZE+i], hidden[j+1],
-                //                          w_hh[(j+2)*GRU_G_SIZE+i], hidden[j+2],
-                //                          w_hh[(j+3)*GRU_G_SIZE+i], hidden[j+3],
-                //                          w_hh[(j+4)*GRU_G_SIZE+i], hidden[j+4],
-                //                          w_hh[(j+5)*GRU_G_SIZE+i], hidden[j+5],
-                //                          w_hh[(j+6)*GRU_G_SIZE+i], hidden[j+6],
-                //                          w_hh[(j+7)*GRU_G_SIZE+i], hidden[j+7]);
+                mul1[i] += tmp_mul1[i][j];
             }
         }
+// ######################################################################
+
+        for (int j = 0; j < GRU_HIDDEN_SIZE; j+=1) {
+#pragma HLS UNROLL
+            for (int i = 0; i < GRU_G_SIZE; i+=1) {
+                tmp_mul2[i][j] = w_hh[j*GRU_G_SIZE+i] * hidden[j];
+
+                // tmp_mul2[i+0] += gru_4_cores(w_hh[(j+0)*GRU_G_SIZE+i+0], hidden[j+0],
+                //                              w_hh[(j+1)*GRU_G_SIZE+i+0], hidden[j+1],
+                //                              w_hh[(j+2)*GRU_G_SIZE+i+0], hidden[j+2],
+                //                              w_hh[(j+3)*GRU_G_SIZE+i+0], hidden[j+3]);
+            }
+        }
+
+        for (int j = 0; j < GRU_HIDDEN_SIZE; j+=1) {
+#pragma HLS UNROLL
+            for (int i = 0; i < GRU_G_SIZE; i+=1) {
+                if (j == 0) {
+                    mul2[i] = 0;
+                }
+                mul2[i] += tmp_mul2[i][j];
+            }
+        }
+// ######################################################################
 
         loop_chunk_g: for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
 #pragma HLS UNROLL
@@ -198,13 +191,57 @@ void gru (
             h_n[i] = mul2[2*GRU_HIDDEN_SIZE+i] + b_hh[2*GRU_HIDDEN_SIZE+i];
         }
 
-        loop_gru_layer: for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
-#pragma HLS PIPELINE II=16
-            resetgate[i] = sigmoid_hls(i_r[i] + h_r[i]);
-            inputgate[i] = sigmoid_hls(i_i[i] + h_i[i]);
-            newgate[i] = hls::tanh(resetgate[i] * h_n[i] + i_n[i]);
+//         loop_gru_layer: for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+// #pragma HLS PIPELINE II=16
+//             resetgate[i] = sigmoid_hls(i_r[i] + h_r[i]);
+//             inputgate[i] = sigmoid_hls(i_i[i] + h_i[i]);
+//             newgate[i] = hls::tanh(resetgate[i] * h_n[i] + i_n[i]);
+//             hidden[i] = newgate[i] + (hidden[i] - newgate[i]) * inputgate[i];
+//             out << hidden[i];
+//         }
+
+        // resetgate
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
+            tmp_r[i] = i_r[i] + h_r[i];
+        }
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
+            resetgate[i] = sigmoid_hls(tmp_r[i]);
+        }
+
+        // inputgate
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
+            tmp_i[i] = i_i[i] + h_i[i];
+        }
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
+            inputgate[i] = sigmoid_hls(tmp_i[i]);
+        }
+
+        // newgate
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
+            tmp_n[i] = resetgate[i] * h_n[i] + i_n[i];
+        }
+
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
+            newgate[i] = hls::tanh(tmp_n[i]);
+        }
+
+        // hidden
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
             hidden[i] = newgate[i] + (hidden[i] - newgate[i]) * inputgate[i];
+        }
+
+        // output
+        for (int i = 0; i < GRU_HIDDEN_SIZE; i++) {
+#pragma HLS UNROLL
             out << hidden[i];
         }
+
     }
 }

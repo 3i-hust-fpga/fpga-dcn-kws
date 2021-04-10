@@ -7,8 +7,8 @@ import time
 from tvdcn import DeformConv2d 
 
 torch.random.manual_seed(1)
-torch.set_num_threads(16)
-exit()
+# torch.set_num_threads(16)
+# exit()
 
 CONV_IN_SIZE_0 = 200
 CONV_IN_SIZE_1 = 40

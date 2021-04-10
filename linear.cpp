@@ -1,5 +1,40 @@
 #include "header.h"
 
+// void linear_1(
+//     hls::stream<DTYPE> &in,
+//     DTYPE w [L1_ROWS][L1_COLS],
+//     DTYPE b [L1_ROWS],
+//     hls::stream<DTYPE> &out,
+//     hls::stream<DTYPE> &cache) {
+
+// #pragma HLS ARRAY_PARTITION variable=w complete
+// #pragma HLS ARRAY_PARTITION variable=b complete
+
+//     DTYPE a_row[L1_COLS];
+// #pragma HLS ARRAY_PARTITION variable=a_row complete
+//     DTYPE placeholder;
+//     DTYPE tmp;
+
+//     loop_seq_len: for (int i = 0; i < CONV_OUT_SIZE_0; i++) {
+//     	loop_rows: for (int j = 0; j < L1_ROWS; j++) {
+// #pragma HLS PIPELINE II=32
+//             tmp = 0;
+//             if (j == 0) {
+//             	loop_col_cache_a: for (int k = 0; k < L1_COLS; k++) {
+//             		in >> placeholder;
+//                     a_row[k] = placeholder;
+//                     cache << placeholder;
+//                 }
+//             }
+//             loop_col_mul: for (int k = 0; k < L1_COLS; k++) {
+// #pragma HLS UNROLL
+//                 tmp += (a_row[k] * w[j][k]);
+//             }
+//             out << hls::tanh(tmp + b[j]);
+//         }
+//     }
+// }
+
 void linear_1(
     hls::stream<DTYPE> &in,
     DTYPE w [L1_ROWS][L1_COLS],
@@ -10,31 +45,88 @@ void linear_1(
 #pragma HLS ARRAY_PARTITION variable=w complete
 #pragma HLS ARRAY_PARTITION variable=b complete
 
-    DTYPE a_row[L1_COLS];
-#pragma HLS ARRAY_PARTITION variable=a_row complete
     DTYPE placeholder;
-    DTYPE tmp;
+    DTYPE a_row[L1_COLS];
+    DTYPE mul[L1_ROWS][L1_COLS];
+    DTYPE acc[L1_ROWS];
+    DTYPE activation[L1_ROWS];
+
+#pragma HLS ARRAY_PARTITION variable=a_row complete
+#pragma HLS ARRAY_PARTITION variable=mul complete
+#pragma HLS ARRAY_PARTITION variable=acc complete
+#pragma HLS ARRAY_PARTITION variable=activation complete
 
     loop_seq_len: for (int i = 0; i < CONV_OUT_SIZE_0; i++) {
-    	loop_rows: for (int j = 0; j < L1_ROWS; j++) {
-#pragma HLS PIPELINE II=32
-            tmp = 0;
+#pragma HLS PIPELINE II=64
+        loop_row_mul: for (int j = 0; j < L1_ROWS; j++) {
+#pragma HLS UNROLL
             if (j == 0) {
-            	loop_col_cache_a: for (int k = 0; k < L1_COLS; k++) {
-            		in >> placeholder;
+                loop_col_cache_a: for (int k = 0; k < L1_COLS; k++) {
+                    in >> placeholder;
                     a_row[k] = placeholder;
                     cache << placeholder;
                 }
             }
-            loop_col_mul: for (int k = 0; k < L1_COLS; k++) {
-#pragma HLS UNROLL
-                tmp += (a_row[k] * w[j][k]);
+            for (int k = 0; k < L1_COLS; k++) {
+                mul[j][k] = (a_row[k] * w[j][k]);
             }
-            out << hls::tanh(tmp + b[j]);
         }
+        loop_row_bias: for (int j = 0; j < L1_ROWS; j++) {
+#pragma HLS UNROLL
+            acc[j] = b[j];
+        }
+
+        loop_row_acc: for (int j = 0; j < L1_ROWS; j++) {
+#pragma HLS UNROLL
+            for (int k = 0; k < L1_COLS; k++) {
+                acc[j] += mul[j][k];
+            }
+        }
+
+        loop_row_activation: for (int j = 0; j < L1_ROWS; j++) {
+#pragma HLS UNROLL
+            activation[j] = hls::tanh(acc[j]);
+        }
+
+
+        loop_row_out: for (int j = 0; j < L1_ROWS; j++) {
+#pragma HLS UNROLL
+            out << activation[j];
+        }
+        
     }
 }
 
+// void linear_2(
+//     hls::stream<DTYPE> &in,
+//     DTYPE w [L2_ROWS][L2_COLS],
+//     DTYPE b [L2_ROWS],
+//     hls::stream<DTYPE> &out) {
+
+// #pragma HLS ARRAY_PARTITION variable=w complete
+// #pragma HLS ARRAY_PARTITION variable=b complete
+
+//     DTYPE a_row[L2_COLS];
+// #pragma HLS ARRAY_PARTITION variable=a_row complete
+//     DTYPE tmp;
+
+//     loop_seq_len: for (int i = 0; i < CONV_OUT_SIZE_0; i++) {
+//     	loop_rows: for (int j = 0; j < L2_ROWS; j++) {
+// #pragma HLS PIPELINE II=32
+//             tmp = 0;
+//             if (j == 0) {
+//             	loop_col_cache: for (int k = 0; k < L2_COLS; k++) {
+//                     in >> a_row[k];
+//                 }
+//             }
+//             loop_col_mul: for (int k = 0; k < L2_COLS; k++) {
+// #pragma HLS UNROLL
+//                 tmp += a_row[k] * w[j][k];
+//             }
+//             out << tmp + b[j];
+//         }
+//     }
+// }
 
 void linear_2(
     hls::stream<DTYPE> &in,
@@ -46,27 +138,45 @@ void linear_2(
 #pragma HLS ARRAY_PARTITION variable=b complete
 
     DTYPE a_row[L2_COLS];
+    DTYPE mul[L2_ROWS][L2_COLS];
+    DTYPE acc[L2_ROWS];
+
 #pragma HLS ARRAY_PARTITION variable=a_row complete
-    DTYPE tmp;
+#pragma HLS ARRAY_PARTITION variable=mul complete
+#pragma HLS ARRAY_PARTITION variable=acc complete
 
     loop_seq_len: for (int i = 0; i < CONV_OUT_SIZE_0; i++) {
-    	loop_rows: for (int j = 0; j < L2_ROWS; j++) {
-#pragma HLS PIPELINE II=32
-            tmp = 0;
+#pragma HLS PIPELINE II=64
+        loop_row_mul: for (int j = 0; j < L2_ROWS; j++) {
+#pragma HLS UNROLL
             if (j == 0) {
-            	loop_col_cache: for (int k = 0; k < L2_COLS; k++) {
+                loop_col_cache_a: for (int k = 0; k < L2_COLS; k++) {
                     in >> a_row[k];
                 }
             }
-            loop_col_mul: for (int k = 0; k < L2_COLS; k++) {
-#pragma HLS UNROLL
-                tmp += a_row[k] * w[j][k];
+            for (int k = 0; k < L2_COLS; k++) {
+                mul[j][k] = (a_row[k] * w[j][k]);
             }
-            out << tmp + b[j];
         }
+        loop_row_bias: for (int j = 0; j < L2_ROWS; j++) {
+#pragma HLS UNROLL
+            acc[j] = b[j];
+        }
+
+        loop_row_acc: for (int j = 0; j < L2_ROWS; j++) {
+#pragma HLS UNROLL
+            for (int k = 0; k < L2_COLS; k++) {
+                acc[j] += mul[j][k];
+            }
+        }
+
+        loop_row_out: for (int j = 0; j < L2_ROWS; j++) {
+#pragma HLS UNROLL
+            out << acc[j];
+        }
+        
     }
 }
-
 
 void linear_3(
     hls::stream<DTYPE> &in,
