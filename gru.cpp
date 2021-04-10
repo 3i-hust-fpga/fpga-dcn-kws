@@ -78,8 +78,8 @@ void gru (
 #pragma HLS RESOURCE variable=b_ih core=RAM_1P_LUTRAM
 #pragma HLS RESOURCE variable=b_hh core=RAM_1P_LUTRAM
 
-#pragma HLS ARRAY_PARTITION variable=w_hh cyclic factor=16 dim=1
-#pragma HLS ARRAY_PARTITION variable=w_ih cyclic factor=16 dim=1
+#pragma HLS ARRAY_PARTITION variable=w_hh cyclic factor=16 dim=0
+#pragma HLS ARRAY_PARTITION variable=w_ih cyclic factor=16 dim=0
 #pragma HLS ARRAY_PARTITION variable=b_hh complete
 #pragma HLS ARRAY_PARTITION variable=b_ih complete
 
