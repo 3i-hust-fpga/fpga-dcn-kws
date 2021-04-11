@@ -7,14 +7,14 @@ void conv_offset(
     DTYPE w_offset[CONV_OFFSET_FILTERS][CONV_KERNEL_SIZE_0][CONV_KERNEL_SIZE_1], 
     DTYPE b_offset[CONV_OFFSET_FILTERS],
     hls::stream<DTYPE> &offsets) {
-#pragma HLS RESOURCE variable=w_offset core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=b_offset core=RAM_1P_LUTRAM
-#pragma HLS ARRAY_PARTITION variable=w_offset cyclic factor=8 dim=1
-#pragma HLS ARRAY_PARTITION variable=b_offset cyclic factor=8 dim=1
+#pragma HLS RESOURCE variable=w_offset core=ROM_2P_BRAM
+#pragma HLS RESOURCE variable=b_offset core=ROM_2P_BRAM
+#pragma HLS ARRAY_PARTITION variable=w_offset complete
+#pragma HLS ARRAY_PARTITION variable=b_offset complete
     DTYPE val1, val2;
     DTYPE sum, placeholder;
     Buffer<BUFFER_SIZE> conv_buff;
-#pragma HLS ARRAY_PARTITION variable=conv_buff complete dim=0
+#pragma HLS ARRAY_PARTITION variable=conv_buff complete
 
     conv_init_buffer: for(int i = 0; i < BUFFER_SIZE; i++) {
         if(in.empty() == 0) {
@@ -65,10 +65,10 @@ void conv_out(
     DTYPE b_out[CONV_FILTERS],
     hls::stream<DTYPE> &out) {
 
-#pragma HLS RESOURCE variable=w_out core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=b_out core=RAM_1P_LUTRAM
-#pragma HLS ARRAY_PARTITION variable=w_out cyclic factor=8 dim=1
-#pragma HLS ARRAY_PARTITION variable=b_out cyclic factor=8 dim=1
+#pragma HLS RESOURCE variable=w_out core=ROM_2P_BRAM
+#pragma HLS RESOURCE variable=b_out core=ROM_2P_BRAM
+#pragma HLS ARRAY_PARTITION variable=w_out complete
+#pragma HLS ARRAY_PARTITION variable=b_out complete
     // dcn
     int x_l, x_h, y_l, y_h;
     DTYPE offset_x, offset_y;
@@ -76,7 +76,7 @@ void conv_out(
     DTYPE p1=0, p2=0, p3=0, p4=0;
     DTYPE deformed;
     DTYPE out_tmp[CONV_FILTERS] = {0};
-#pragma HLS ARRAY_PARTITION variable=out_tmp complete dim=0
+#pragma HLS ARRAY_PARTITION variable=out_tmp complete
     
     conv_out_size_0: for (int i = 0; i < CONV_OUT_SIZE_0; i += CONV_STRIDE) {
         conv_out_size_1: for (int j = 0; j < CONV_OUT_SIZE_1; j += CONV_STRIDE) {
@@ -146,6 +146,7 @@ void conv_out(
                 }
             }
             conv_output: for (int filter = 0; filter < CONV_FILTERS; filter++) {
+#pragma HLS UNROLL
                 out << out_tmp[filter];
             }
 
